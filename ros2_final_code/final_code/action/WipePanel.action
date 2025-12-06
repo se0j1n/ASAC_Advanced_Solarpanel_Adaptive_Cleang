@@ -1,0 +1,12 @@
+# Goal
+float32 start_angle
+
+---
+# Result
+bool success
+string message
+
+---
+# Feedback
+float32 progress
+

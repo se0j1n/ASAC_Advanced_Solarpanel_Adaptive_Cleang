@@ -1,0 +1,6 @@
+int32 tool_id
+---
+bool success
+string message
+---
+int32 progress

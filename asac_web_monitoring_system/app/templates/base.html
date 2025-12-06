@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>ASAC Control Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Science Gothic (Google Fonts) -->
+    <link href="https://fonts.googleapis.com/css2?family=Science+Gothic:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+
+</head>
+<body>
+    {% set current_path = request.url.path %}
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar__logo">
+                <img class="logo-img" src="/static/img/asac_logo.png" alt="ASAC Logo">
+                    <div class="logo-text">
+                    <span class="logo-title">ASAC</span>
+                    <span class="logo-sub">Autonomous Surface-Adaptive Cleaning</span>
+                </div>
+            </div>
+
+
+
+            <nav class="sidebar__nav">
+                <!-- 실시간 관제 -->
+                 <a href="/" class="nav-item {% if current_path == '/' %}nav-item--active{% endif %}">
+
+                    <span class="nav-dot"></span>
+                    <span>실시간 관제</span>
+                </a>
+                <!-- 로봇팔 상태 -->
+                <a href="/robot-status" class="nav-item {% if current_path == '/robot-status' %}nav-item--active{% endif %}">
+
+                    <span class="nav-dot"></span>
+                    <span>로봇팔 상태</span>
+                </a>
+                <!-- 작업 이력 -->
+                <a href="/history"
+                   class="nav-item {% if request.url.path == '/history' %}nav-item--active{% endif %}">
+                    <span class="nav-dot"></span>
+                    <span>작업 이력</span>
+                </a>
+                <!-- 알림 & 로그 -->
+                <a href="/logs"
+                   class="nav-item {% if request.url.path == '/logs' %}nav-item--active{% endif %}">
+                    <span class="nav-dot"></span>
+                    <span>알림 & 로그</span>
+                </a>
+                <!-- 설정 -->
+                <a href="/settings"
+                   class="nav-item {% if request.url.path == '/settings' %}nav-item--active{% endif %}">
+                    <span class="nav-dot"></span>
+                    <span>설정</span>
+                </a>
+            </nav>
+
+            <div class="sidebar__footer">
+                <div class="sidebar-chip">
+                    <span class="chip-dot chip-dot--live"></span>
+                    <span class="chip-label">LIVE LINKED</span>
+                </div>
+                <span class="sidebar-version">v0.1 · Demo</span>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <div class="page-title">
+                        <span class="page-eyebrow">{{ page_eyebrow }}</span>
+                        <h1>{{ page_title }}</h1>
+                    </div>
+
+<!-- 
+                    <div class="page-title">
+                        <span class="page-eyebrow">Monitoring</span>
+                        <h1>ASAC System Dashboard</h1>
+                    </div> -->
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-pill">
+                        <span class="status-dot status-dot--online"></span>
+                        <span class="status-label">ASAC Edge Server</span>
+                    </div>
+
+                    <div class="topbar-user">
+                        <div class="user-avatar">SJ</div>
+                        <div class="user-meta">
+                            <span class="user-name">Han Seojin</span>
+                            <span class="user-role">Operator</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="main-content">
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', path='js/main.js') }}"></script>
+</body>
+</html>

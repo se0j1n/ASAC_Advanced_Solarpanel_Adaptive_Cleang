@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid grid--top">
+    <!-- Live camera -->
+    <div class="card card--live">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="dot dot--live"></span>
+                <h2>Live Camera · Robot Arm</h2>
+            </div>
+            <div class="card-meta">
+                <span class="badge badge--outline">CAM-01</span>
+                <span class="badge">Streaming</span>
+            </div>
+        </div>
+        <div class="live-wrapper">
+             <img src="/livecam" class="live-video" />
+
+        </div>
+        <div class="card-footer card-footer--compact">
+            <span class="footer-label">현재 모드</span>
+            <span class="footer-value">{{ current_mode }}</span>
+            <span class="footer-divider"></span>
+            <span class="footer-label">⏱지연 시간</span>
+            <span class="footer-value" id="latencyValue">0 sec</span>
+
+        </div>
+    </div>
+
+
+    <!-- Robot Link --> 
+<div class="summary-grid">
+        
+
+    <div class="card">
+        <div class="card-header">
+            <h3 style="font-size: 30px">Robot Link</h3>
+        </div>
+
+        <div class="card-body">
+            <p class="label" style="font-size: 24px">1. 각도 측정하기</p>
+            <!-- 버튼 1: 각도 측정 -->
+            <button class="mode-btn" onclick="startAngleMeasure()">📐각도 측정 시작</button>>
+
+            <div class="angle-row">
+    <span class="label" style="font-size: 20px;">측정된 각도:&nbsp;</span>
+    <span id="measuredAngle" class="measured-angle" style="font-size: 20px; font-weight: 600;">—</span>
+</div>
+
+
+
+
+            <!-- 모드 선택 -->
+            <p class="label" style="font-size: 24px">2. 작업모드 선택하기</p>
+
+            <div class="mode-buttons">
+                <button class="mode-btn" id="tool-wipe" onclick="selectTool(1)">🧹 걸레 청소</button>
+                <button class="mode-btn" id="tool-water" onclick="selectTool(2)">💧 물 분사</button>
+            </div>
+
+            <!-- 버튼 2: 모드 확인 -->
+            <button class="confirm-btn" onclick="confirmTool()">✅ 모드 확인</button>
+            <p class="label"  style="font-size: 24px">3. 작업 시작하기</p>
+
+            <!-- 버튼 3: 작업 시작 -->
+            <button class="mode-btn" onclick="startCleaning()">🚀 작업 시작</button>
+
+        </div>
+    </div>
+
+    <div class="card card--summary">
+    <div class="card-header">
+        <h3>Work State</h3>
+    </div>
+    <div class="summary-main">
+        <p class="summary-label">현재 작업 상태</p>
+        <p class="summary-value" id="workStateText">🟢 대기 중</p>
+    </div>
+    <div class="progress-section">
+        <p class="summary-label">현재 진행률</p>
+
+        <div class="progress-wrapper">
+            <div id="progressFill" class="progress-bar"></div>
+        </div>
+
+    <p id="progressPercent" class="progress-text">0%</p>
+</div>
+
+</div>
+        </div>
+
+
+        <div class="card card--summary">
+            <div class="card-header">
+                <h3>환경 센서</h3>
+            </div>
+            <div class="env-grid">
+                <div class="env-item">
+                    <span class="env-label">기온</span>
+                    <span class="env-value">{{ environment.temp if environment else "—" }}°C</span>
+                </div>
+                <div class="env-item">
+                    <span class="env-label">풍속</span>
+                    <span class="env-value">{{ environment.wind if environment else "—" }} m/s</span>
+                </div>
+                <div class="env-item">
+                    <span class="env-label">일사량</span>
+                   <span class="env-value">{{ environment.solar if environment else "—" }} W/m²</span>
+                </div>
+            </div>
+            <div class="summary-footer">
+                <span class="summary-tag">Weather API Ready</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid--bottom">
+    <!-- Alerts -->
+    <div class="card card--list">
+        <div class="card-header">
+            <h3>실시간 알림</h3>
+            <span class="badge badge--pill">{{ alert_count }} active</span>
+        </div>
+        <ul class="list list--alerts" id="alert-list">
+            <li class="list-item list-item--alert list-item--warning">
+                <div class="list-pill list-pill--warning">Wind</div>
+                <div class="list-main">
+                    <p class="list-title">{{ last_alert }}</p>
+                    <p class="list-sub">Sector B-03 · 2 min ago</p>
+                </div>
+            </li>
+            <li class="list-item list-item--alert">
+                <div class="list-pill list-pill--info">System</div>
+                <div class="list-main">
+                    <p class="list-title">Routine self-check completed</p>
+                    <p class="list-sub">No issues detected · 10 min ago</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Timeline / Logs -->
+    <div class="card card--list">
+        <div class="card-header">
+            <h3>작업 타임라인</h3>
+        </div>
+        <ul class="list list--timeline" id="timeline-list">
+            <li class="list-item">
+                <div class="timeline-dot timeline-dot--active"></div>
+                <div class="list-main">
+                    <p class="list-title">Panel B-03 cleaning in progress</p>
+                    <p class="list-sub">Arm moving in zig-zag sweep pattern</p>
+                </div>
+                <span class="list-time">Now</span>
+            </li>
+            <li class="list-item">
+                <div class="timeline-dot"></div>
+                <div class="list-main">
+                    <p class="list-title">Panel B-02 cleaning completed</p>
+                    <p class="list-sub">Water usage: 0.8L · Time: 36s</p>
+                </div>
+                <span class="list-time">+5 min</span>
+            </li>
+            <li class="list-item">
+                <div class="timeline-dot"></div>
+                <div class="list-main">
+                    <p class="list-title">Home position reached</p>
+                    <p class="list-sub">Ready for next panel</p>
+                </div>
+                <span class="list-time">+12 min</span>
+            </li>
+        </ul>
+    </div>
+</div>
+<script>
+let selectedTool = null;
+
+
+// 타이머 관련 변수
+
+let timerStart = null;
+let timerRunning = false;
+
+
+
+//  1. 각도 측정 시작
+
+async function startAngleMeasure() {
+    await fetch("/api/start_angle_measure", { method: "POST" });
+
+    timerStart = Date.now();
+    timerRunning = true;
+
+    alert("각도 측정을 시작합니다!");
+}
+
+
+
+// 2. 모드 선택
+function selectTool(tool) {
+    selectedTool = tool;
+
+    document.getElementById("tool-wipe").classList.remove("active");
+    document.getElementById("tool-water").classList.remove("active");
+
+    if (tool === 1) document.getElementById("tool-wipe").classList.add("active");
+    else document.getElementById("tool-water").classList.add("active");
+}
+
+async function confirmTool() {
+    if (!selectedTool) {
+        alert("모드를 선택하세요!");
+        return;
+    }
+
+    await fetch("/api/select_tool", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ tool: selectedTool })
+    });
+
+    alert("모드가 설정되었습니다!");
+}
+
+
+
+
+//  3. 작업 시작 (프론트 progress도 초기화)
+
+async function startCleaning() {
+    const res = await fetch("/api/start_cleaning", { method: "POST" });
+    const data = await res.json();
+
+    if (data.error) {
+        alert("⚠ 오류: " + data.error);
+        return;
+    }
+
+    // 작업 시작 시 progress 리셋
+    displayedProgress = 0;
+    targetProgress = 0;
+    document.getElementById("progressFill").style.width = "0%";
+    document.getElementById("progressPercent").textContent = "0%";
+
+    alert(`작업 시작! (각도: ${data.angle}°, 모드: ${data.tool})`);
+}
+
+
+
+//  4. 부드러운 프로그래스바
+
+let displayedProgress = 0;
+let targetProgress = 0;
+
+function animateProgress() {
+    // 증가 속도 설정 (너가 원하는 느낌에 맞게 수정 가능)
+    const speed = 0.2;  // 작을수록 느리고 부드러움
+
+    // 목표치보다 뒤쳐져 있으면 계속 증가
+    if (displayedProgress < targetProgress) {
+        displayedProgress += speed;
+
+        // 목표를 넘으면 클램프
+        if (displayedProgress > targetProgress) {
+            displayedProgress = targetProgress;
+        }
+    }
+
+    // progress 반영
+    document.getElementById("progressFill").style.width = displayedProgress + "%";
+    document.getElementById("progressPercent").textContent =
+        displayedProgress.toFixed(1) + "%";
+
+    // 다음 프레임 실행
+    requestAnimationFrame(animateProgress);
+}
+
+
+
+
+//  5. 상태 업데이트
+async function fetchState() {
+    const res = await fetch("/api/work_state");
+    const data = await res.json();
+
+    document.getElementById("workStateText").textContent = data.ui_state;
+    document.getElementById("measuredAngle").textContent =
+        data.measured_angle ?? "—";
+
+    // robot_state.py에서 오는 진행률
+    targetProgress = data.overall_progress || 0;
+
+    // 작업 완료 시 타이머 중지
+    if (timerRunning && data.robot_state === "IDLE" && targetProgress >= 100) {
+        timerRunning = false;
+    }
+}
+
+
+
+
+// 6. 부드러운 스톱워치 타이머
+
+function updateTimer() {
+    if (timerRunning && timerStart) {
+        const now = Date.now();
+        const elapsedSec = (now - timerStart) / 1000;
+
+        // 60초 미만 → 초.밀리초 표시
+        if (elapsedSec < 60) {
+            document.getElementById("latencyValue").textContent =
+                elapsedSec.toFixed(2) + " sec";
+        } 
+        // 60초 이상 → mm:ss.ms 포맷
+        else {
+            const minutes = Math.floor(elapsedSec / 60);
+            const seconds = (elapsedSec % 60).toFixed(2);
+
+            // 두 자리수 포맷 (01:05.32)
+            const mm = String(minutes).padStart(2, "0");
+            const ss = String(seconds).padStart(2, "0");
+
+            document.getElementById("latencyValue").textContent = `${mm}:${ss}`;
+        }
+    }
+
+    requestAnimationFrame(updateTimer);
+}
+
+updateTimer();  // 타이머 애니메이션 시작
+
+
+
+
+// 페이지 로딩 시 프로그래스 UI 초기화
+
+document.addEventListener("DOMContentLoaded", () => {
+    displayedProgress = 0;
+    targetProgress = 0;
+
+    document.getElementById("progressFill").style.width = "0%";
+    document.getElementById("progressPercent").textContent = "0%";
+});
+
+
+// 500ms마다 상태 업데이트
+
+setInterval(fetchState, 500);
+
+
+
+// 프로그래스 애니메이션 시작
+
+animateProgress();
+</script>
+
+
+
+
+
+{% endblock %}

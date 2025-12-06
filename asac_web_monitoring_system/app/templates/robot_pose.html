@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- <div class="page-title">
+    <span class="page-eyebrow">Robot Monitoring</span>
+    <h1>Robot Arm Status</h1>
+</div> -->
+
+<div class="card card--summary robot-status-card">
+
+    <div class="card-header">
+        <h3>TCP Position</h3>
+        <span class="badge badge--pill">
+            <span class="status-dot status-dot--online"></span> Streaming
+        </span>
+    </div>
+
+    <div class="pose-grid">
+        <div class="pose-item">
+            <span class="pose-label">X</span>
+            <span class="pose-value" id="poseX">0</span>
+        </div>
+        <div class="pose-item">
+            <span class="pose-label">Y</span>
+            <span class="pose-value" id="poseY">0</span>
+        </div>
+        <div class="pose-item">
+            <span class="pose-label">Z</span>
+            <span class="pose-value" id="poseZ">0</span>
+        </div>
+    </div>
+
+    <div class="summary-footer">
+        <span class="summary-tag">20ms Refresh</span>
+        <span class="summary-tag">ROS2 TCP Service Ready</span>
+    </div>
+
+</div>
+
+
+<script>
+let last = {x:0, y:0, z:0};
+let target = {x:0, y:0, z:0};
+
+// API 요청
+async function fetchPose(){
+    const res = await fetch("/api/robot_pose");
+    const d = await res.json();
+    if(!d || d.x === null) return;
+
+    target.x = d.x;
+    target.y = d.y;
+    target.z = d.z;
+}
+
+// 보간 표시
+function renderPose(){
+    last.x += (target.x - last.x) * 0.2;
+    last.y += (target.y - last.y) * 0.2;
+    last.z += (target.z - last.z) * 0.2;
+
+    document.getElementById("poseX").textContent = last.x.toFixed(1);
+    document.getElementById("poseY").textContent = last.y.toFixed(1);
+    document.getElementById("poseZ").textContent = last.z.toFixed(1);
+}
+
+// 20ms 업데이트
+setInterval(fetchPose, 20);
+setInterval(renderPose, 16);
+</script>
+
+{% endblock %}
